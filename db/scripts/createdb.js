@@ -99,6 +99,7 @@ fs.readdir(dataAbsPath, (err, files) => {
           .join(',\n')}
       )`);
 
+      // TODO: this should run after the CREATE TABLE promise resolves.
       files.forEach((file) => {
         const results = [];
         const [month, day, year] = file.replace(/\.csv/, '').split('-');
@@ -136,11 +137,6 @@ fs.readdir(dataAbsPath, (err, files) => {
                 ${values}
               ;
             `;
-            console.log(insertStatement);
-            // console.log(results);
-            results.forEach((result) => {
-              // console.log(result);
-            });
 
             appDao.run(insertStatement);
           });
