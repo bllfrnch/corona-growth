@@ -3,9 +3,9 @@ import path from 'path';
 import csv from 'csv-parser';
 import sqlite from 'sqlite3';
 
-const table = [];
-
 const dataTypes = {
+  id: 'INTEGER',
+  date: 'TEXT',
   Province_State: 'TEXT',
   Country_Region: 'TEXT',
   Last_Update: 'TEXT',
@@ -90,11 +90,11 @@ fs.readdir(dataAbsPath, (err, files) => {
   headerPromise
     .then((headers) => {
       appDao.run(`CREATE TABLE IF NOT EXISTS daily_reports_us (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date DATE,
         ${Object.keys(dataTypes)
           .map((k) => {
-            return `${k.toLowerCase()} ${dataTypes[k]}`;
+            return k === 'id'
+              ? `${k.toLowerCase()} ${dataTypes[k]} PRIMARY KEY AUTOINCREMENT`
+              : `${k.toLowerCase()} ${dataTypes[k]}`;
           })
           .join(',\n')}
       )`);
@@ -102,23 +102,38 @@ fs.readdir(dataAbsPath, (err, files) => {
       files.forEach((file) => {
         const results = [];
         const [month, day, year] = file.replace(/\.csv/, '').split('-');
-        const date = new Date(year, month, day);
+        const date = `${year}-${month}-${day}`;
+        const quote = (str) => `'${str}'`;
         fs.createReadStream(`${dataAbsPath}/${file}`)
           .pipe(csv())
           .on('data', (data) => results.push(data))
           .on('end', () => {
-            // TODO: get the CSV types to get the row names
-            // we also need a primary key and the date
+            const values = results
+              .map((current) => {
+                // Start by prepending an array for the columns we've added, a null
+                // value for the auto increment id field, and a date for the date field.
+                // Then we build up an array of data from the csv file, adding null values
+                // when empty strings are found, and use the dataTypes lookup table to
+                // decide whether to quote or not.
+                return `(
+                  ${['null', quote(date)]
+                    .concat(
+                      headers.map((h) => {
+                        if (current[h] === '') {
+                          return 'null';
+                        }
+                        return dataTypes[h] === 'TEXT' ? quote(current[h]) : current[h];
+                      })
+                    )
+                    .join(', ')}
+                )`;
+              })
+              .join(',\n');
+
             const insertStatement = `
               INSERT INTO daily_reports_us
-              VALUES
-                ${results
-                  .map((j, k) => {
-                    return `(
-                    ${j} ${k}
-                  )`;
-                  })
-                  .join(', \n')}
+              VALUES 
+                ${values}
               ;
             `;
             console.log(insertStatement);
@@ -127,12 +142,12 @@ fs.readdir(dataAbsPath, (err, files) => {
               // console.log(result);
             });
 
-            // TODO: perform the insert using AppDAO
+            appDao.run(insertStatement);
           });
       });
     })
-    .catch((reason) => {
-      console.log('Some shit went wrong', reason);
+    .catch((err) => {
+      console.log('Some shit went wrong', err);
     });
 });
 
