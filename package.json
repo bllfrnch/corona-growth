@@ -28,6 +28,7 @@
     "@babel/plugin-transform-runtime": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
     "@babel/runtime": "^7.9.6",
+    "csv-parser": "^2.3.2",
     "sqlite3": "^4.2.0"
   },
   "devDependencies": {
