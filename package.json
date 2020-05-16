@@ -6,9 +6,6 @@
   "scripts": {
     "test": "npm run test",
     "scripts:build": "babel db/scripts/*js --out-dir build",
-    "web:build",
-    "web:dev": "",
-    "web:prod": "",
     "predb:create": "npm run scripts:build",
     "db:create": "sh ./db/scripts/createdb.sh",
     "predb:update": "npm run build",
@@ -16,6 +13,10 @@
     "db:delete": "rm ./db/corona.db",
     "db:start": "",
     "db:stop": "",
+    "web:build": "",
+    "web:dev": "",
+    "web:prod": "",
+    "predeploy": "",
     "deploy": ""
   },
   "author": "Bill French <bllfrnch@gmail.com>",
