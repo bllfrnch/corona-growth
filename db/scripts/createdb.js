@@ -3,6 +3,27 @@ import path from 'path';
 import csv from 'csv-parser';
 import sqlite from 'sqlite3';
 
+const dataTypes = {
+  Province_State: 'TEXT',
+  Country_Region: 'TEXT',
+  Last_Update: 'TEXT',
+  Lat: 'REAL',
+  Long_: 'REAL',
+  Confirmed: 'INTEGER',
+  Deaths: 'INTEGER',
+  Recovered: 'INTEGER',
+  Active: 'INTEGER',
+  FIPS: 'INTEGER',
+  Incident_Rate: 'REAL',
+  People_Tested: 'INTEGER',
+  People_Hospitalized: 'INTEGER',
+  Mortality_Rate: 'REAL',
+  UID: 'INTEGER',
+  ISO3: 'TEXT',
+  Testing_Rate: 'REAL',
+  Hospitalization_Rate: 'REAL',
+};
+
 class AppDAO {
   constructor(dbFilePath) {
     this.db = new sqlite.Database(dbFilePath, (err) => {
@@ -38,8 +59,6 @@ console.log(`Creating database at ${dbAbsPath}`);
 const appDao = new AppDAO(dbAbsPath);
 
 fs.readdir(dataAbsPath, (err, files) => {
-  let headers;
-
   // handling error
   if (err) {
     throw new Error(`Unable to scan directory: ${err}`);
@@ -50,39 +69,47 @@ fs.readdir(dataAbsPath, (err, files) => {
   }
 
   const headerPromise = new Promise((resolve, reject) => {
+    let headers;
     // Get field names from first data file
     const first = files.find((file) => file.match(/^\d{2,}-\d{2,}-\d{4,}/));
-    console.log(first);
     if (first) {
-      console.log(`Yes, reading ${dataAbsPath}/${first}`);
       fs.createReadStream(`${dataAbsPath}/${first}`)
         .pipe(csv())
         .on('headers', (h) => {
-          console.log(`headers ${h}`);
           headers = h;
-          resolve();
+          resolve(headers);
         });
     } else {
       reject(new Error('No headers found'));
     }
   });
 
-  // Create table
-  // appDao.run(`CREATE TABLE IF NOT EXISTS daily_reports_us (
-  //   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  //   date DATE,
-
-  // )`);
-
   // listing all files using forEach
   headerPromise
-    .then(() => {
-      console.log('headers: ', headers);
+    .then((headers) => {
+      // Create table
+      // console.log(Object.keys(dataTypes)).forEach((k) => {
+      //   console.log(`${k.toLowerCase()}: ${dataTypes[k]}`);
+      // });
+
+      console.log(`CREATE TABLE IF NOT EXISTS daily_reports_us (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date DATE,
+        ${Object.keys(dataTypes)
+          .map((k) => {
+            return `${k.toLowerCase()} ${dataTypes[k]}`;
+          })
+          .join(',\n')}
+      )`);
+      // appDao.run(`CREATE TABLE IF NOT EXISTS daily_reports_us (
+      //   id INTEGER PRIMARY KEY AUTOINCREMENT,
+      //   date DATE,
+      // )`);
+
       files.forEach((file) => {
         const results = [];
         const [month, day, year] = file.replace(/\.csv/, '').split('-');
         const date = new Date(year, month, day);
-        console.log(date);
         fs.createReadStream(`${dataAbsPath}/${file}`)
           .pipe(csv())
           .on('data', (data) => results.push(data))
@@ -90,9 +117,9 @@ fs.readdir(dataAbsPath, (err, files) => {
             // TODO: get the CSV types to get the row names
             // we also need a primary key and the date
             let insertStatement = '';
-            console.log(results);
+            // console.log(results);
             results.forEach((result) => {
-              // TODO: build up the values
+              // console.log(result);
             });
 
             // TODO: perform the insert using AppDAO
@@ -100,7 +127,7 @@ fs.readdir(dataAbsPath, (err, files) => {
       });
     })
     .catch((reason) => {
-      console.log('Some shit went wrong');
+      console.log('Some shit went wrong', reason);
     });
 });
 
