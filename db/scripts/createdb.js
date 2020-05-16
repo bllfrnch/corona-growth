@@ -3,6 +3,8 @@ import path from 'path';
 import csv from 'csv-parser';
 import sqlite from 'sqlite3';
 
+const table = [];
+
 const dataTypes = {
   Province_State: 'TEXT',
   Country_Region: 'TEXT',
@@ -87,12 +89,7 @@ fs.readdir(dataAbsPath, (err, files) => {
   // listing all files using forEach
   headerPromise
     .then((headers) => {
-      // Create table
-      // console.log(Object.keys(dataTypes)).forEach((k) => {
-      //   console.log(`${k.toLowerCase()}: ${dataTypes[k]}`);
-      // });
-
-      console.log(`CREATE TABLE IF NOT EXISTS daily_reports_us (
+      appDao.run(`CREATE TABLE IF NOT EXISTS daily_reports_us (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         date DATE,
         ${Object.keys(dataTypes)
@@ -101,10 +98,6 @@ fs.readdir(dataAbsPath, (err, files) => {
           })
           .join(',\n')}
       )`);
-      // appDao.run(`CREATE TABLE IF NOT EXISTS daily_reports_us (
-      //   id INTEGER PRIMARY KEY AUTOINCREMENT,
-      //   date DATE,
-      // )`);
 
       files.forEach((file) => {
         const results = [];
@@ -116,7 +109,19 @@ fs.readdir(dataAbsPath, (err, files) => {
           .on('end', () => {
             // TODO: get the CSV types to get the row names
             // we also need a primary key and the date
-            let insertStatement = '';
+            const insertStatement = `
+              INSERT INTO daily_reports_us
+              VALUES
+                ${results
+                  .map((j, k) => {
+                    return `(
+                    ${j} ${k}
+                  )`;
+                  })
+                  .join(', \n')}
+              ;
+            `;
+            console.log(insertStatement);
             // console.log(results);
             results.forEach((result) => {
               // console.log(result);
