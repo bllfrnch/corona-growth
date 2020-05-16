@@ -1,5 +1,6 @@
-import sqlite from 'sqlite3';
+import fs from 'fs';
 import path from 'path';
+import sqlite from 'sqlite3';
 
 class AppDAO {
   constructor(dbFilePath) {
@@ -15,10 +16,28 @@ class AppDAO {
 
 const args = process.argv.slice(2);
 const dbPath = args.find(arg => arg.startsWith('db=')).replace(/db=/, '');
-const dbAbsPath = path.normalize(dbPath);
+const dataPath = args.find(arg => arg.startsWith('dataDir=')).replace(/dataDir=/, '');
+const dbAbsPath = path.resolve(dbPath);
+const dataAbsPath = path.resolve(dataPath);
 
-const appDao = new AppDAO(dbAbsPath);
+console.log(args);
+console.log(dbAbsPath);
+console.log(dataAbsPath);
 
-console.log(`Creating database at ${dbAbsPath}`);
+fs.readdir(dataAbsPath, (err, files) => {
+  // handling error
+  if (err) {
+    console.log(`Unable to scan directory: ${err}`);
+  }
+  // listing all files using forEach
+  files.forEach(function (file) {
+    // Do whatever you want to do with the file
+    console.log(file);
+  });
+});
+
+// const appDao = new AppDAO(dbAbsPath);
+
+// console.log(`Creating database at ${dbAbsPath}`);
 
 export default AppDAO;

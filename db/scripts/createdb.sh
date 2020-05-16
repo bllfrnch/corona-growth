@@ -17,7 +17,7 @@ if [[ -d "$CORONA_DB_GIT_REPO_DIR" && -f "$CORONA_DB_GIT_REPO_DIR/.git" ]]; then
   # No? Create database from data in repo
   else
     echo "Creating database from existing repository data."
-    node $JS_BIN/createdb.js db=$CORONA_DB
+    node $JS_BIN/createdb.js db=$CORONA_DB dataDir=$CORONA_DAILY_REPORTS_US_DIR
     echo "Created database $CORONA_DB"
   fi
 # No? Clone it and create database.
@@ -25,6 +25,6 @@ else
   echo "Creating $CORONA_GIT_REPO_PATH git submodule at $CORONA_DB_DIR..."
   git submodule add $CORONA_GIT_REPO_PATH $CORONA_DB_GIT_REPO_DIR
   echo "Creating database $CORONA_DB"
-  node $JS_BIN/createdb.js db=$CORONA_DB
+  node $JS_BIN/createdb.js db=$CORONA_DB dataDir=$CORONA_DAILY_REPORTS_US_DIR
   # sqlite3 $CORONA_DB
 fi
