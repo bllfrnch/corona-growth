@@ -1,12 +1,16 @@
 <template>
-  <div id="#app"></div>
+  <div id="#app">
+    App:
+    <todo></todo>
+  </div>
 </template>
 
 <script>
+import todo from './components/todo';
 export default {
   name: 'app',
   components: {
-    todo: require('./components/todo'),
+    todo,
   },
 };
 </script>

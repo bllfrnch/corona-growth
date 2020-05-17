@@ -1,4 +1,4 @@
-import config from './webpack.config.server';
+import config from './webpack.config.server.babel';
 import chokidar from 'chokidar';
 import express from 'express';
 import http from 'http';
