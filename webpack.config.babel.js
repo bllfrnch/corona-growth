@@ -1,8 +1,8 @@
-var path = require('path');
-var webpack = require('webpack');
-var VueLoaderPlugin = require('vue-loader/lib/plugin');
+import path from 'path';
+import webpack from 'webpack';
+import VueLoaderPlugin from 'vue-loader/lib/plugin';
 
-module.exports = {
+const webpackConfig = {
   entry: {
     entry: './src/main.js',
     styles: './src/styles/index.js',
@@ -74,9 +74,9 @@ module.exports = {
 };
 
 if (process.env.NODE_ENV === 'production') {
-  module.exports.devtool = '#source-map';
+  webpackConfig.devtool = '#source-map';
   // http://vue-loader.vuejs.org/en/workflow/production.html
-  module.exports.plugins = (module.exports.plugins || []).concat([
+  webpackConfig.plugins = (webpackConfig.plugins || []).concat([
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: '"production"',
@@ -93,3 +93,5 @@ if (process.env.NODE_ENV === 'production') {
     }),
   ]);
 }
+
+export default webpackConfig;

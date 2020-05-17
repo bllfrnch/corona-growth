@@ -13,14 +13,12 @@
     "db:delete": "rm ./db/corona.db",
     "db:start": "",
     "db:stop": "",
-    "web:build": "webpack blah",
-    "web:dev": "nodemon web/server/app.js",
+    "web:build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
+    "web:dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
     "web:prod": "",
+    "web:server": "babel-node server.js",
     "predeploy": "npm run web:build",
-    "deploy": "",
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
-    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
-    "server": "babel-node server.js"
+    "deploy": ""
   },
   "author": "Bill French <bllfrnch@gmail.com>",
   "license": "ISC",

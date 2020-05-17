@@ -142,8 +142,8 @@ fs.readdir(dataAbsPath, (err, files) => {
           });
       });
     })
-    .catch((err) => {
-      console.log('Some shit went wrong', err);
+    .catch((e) => {
+      console.log('Some shit went wrong', e);
     });
 });
 

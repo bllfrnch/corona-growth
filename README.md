@@ -6,7 +6,9 @@
    - Create database: `npm run db:create`
    - In the future, you can update the database with latest data: `npm run db:update`
 
-
 TODOS
+
 1. Create database reliably and predictably from cloned Git repo
 2. Update database reliably and predictably from cloned Git repo
+
+Thanks very much to the folks who put this git repository up: https://github.com/andrIvash/ls-vue-express. Without it I'd probably still be trying to get Webpack configured.

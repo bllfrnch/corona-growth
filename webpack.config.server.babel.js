@@ -1,8 +1,8 @@
-var path = require('path');
-var webpack = require('webpack');
-var VueLoaderPlugin = require('vue-loader/lib/plugin');
+import path from 'path';
+import webpack from 'webpack';
+import VueLoaderPlugin from 'vue-loader/lib/plugin';
 
-module.exports = {
+const webpackConfig = {
   entry: {
     entry: ['webpack-hot-middleware/client?name=main', './src/main.js'],
     styles: ['webpack-hot-middleware/client?name=main', './src/styles/index.js'],
@@ -71,8 +71,8 @@ module.exports = {
 };
 
 if (process.env.NODE_ENV === 'production') {
-  module.exports.devtool = '#source-map';
-  module.exports.plugins = (module.exports.plugins || []).concat([
+  webpackConfig.devtool = '#source-map';
+  webpackConfig.plugins = (webpackConfig.plugins || []).concat([
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: '"production"',
@@ -89,3 +89,5 @@ if (process.env.NODE_ENV === 'production') {
     }),
   ]);
 }
+
+export default webpackConfig;
