@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run test",
-    "scripts:build": "babel db/scripts/*js --out-dir build",
-    "predb:create": "npm run scripts:build",
+    "db:scripts:build": "babel db/scripts/*js --out-dir build",
+    "predb:create": "npm run db:scripts:build",
     "db:create": "sh ./db/scripts/createdb.sh",
-    "predb:update": "npm run build",
+    "predb:update": "npm run db:scripts:build",
     "db:update": "",
     "db:delete": "rm ./db/corona.db",
     "db:start": "",
