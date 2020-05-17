@@ -13,25 +13,36 @@
     "db:delete": "rm ./db/corona.db",
     "db:start": "",
     "db:stop": "",
-    "web:build": "",
-    "web:dev": "",
+    "web:build": "webpack blah",
+    "web:dev": "nodemon web/server/app.js",
     "web:prod": "",
-    "predeploy": "",
-    "deploy": ""
+    "predeploy": "npm run web:build",
+    "deploy": "",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
+    "server": "babel-node server.js"
   },
   "author": "Bill French <bllfrnch@gmail.com>",
   "license": "ISC",
   "dependencies": {
+    "csv-parser": "^2.3.2",
+    "express": "^4.17.1",
+    "normalize.css": "^8.0.1",
+    "sqlite3": "^4.2.0",
+    "vue": "^2.6.11",
+    "vue-server-renderer": "^2.6.11"
+  },
+  "devDependencies": {
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.6",
     "@babel/node": "^7.8.7",
     "@babel/plugin-transform-runtime": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
     "@babel/runtime": "^7.9.6",
-    "csv-parser": "^2.3.2",
-    "sqlite3": "^4.2.0"
-  },
-  "devDependencies": {
+    "babel-loader": "^8.1.0",
+    "chokidar": "^3.4.0",
+    "cross-env": "^7.0.2",
+    "css-loader": "^3.5.3",
     "eslint": "^7.0.0",
     "eslint-config-airbnb": "^18.1.0",
     "eslint-config-prettier": "^6.0.0",
@@ -40,7 +51,16 @@
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-react": "^7.14.2",
     "eslint-plugin-react-hooks": "^4.0.2",
-    "nodemon": "^2.0.4",
-    "prettier": "^2.0.5"
+    "file-loader": "^6.0.0",
+    "node-sass": "^4.14.1",
+    "prettier": "^2.0.5",
+    "sass-loader": "^8.0.2",
+    "vue-loader": "^15.9.2",
+    "vue-template-compiler": "^2.6.11",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-middleware": "^3.7.2",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-hot-middleware": "^2.25.0"
   }
 }
