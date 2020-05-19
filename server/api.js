@@ -99,10 +99,11 @@ api.get('/api/cases/date/:date/:countryRegion', (req, res) => {
   connect().then(() => {
     db.all(
       `
-        SELECT *, date AS entry_date
+        SELECT *
         FROM ${dailyReportsUS}
-        WHERE country_region = ? AND entry_date > ? AND entry_date <= ?
-        ORDER BY entry_date, province_state
+        WHERE country_region = ?
+        AND date BETWEEN ? AND ?
+        ORDER BY date, province_state
       `,
       [countryRegion, minDate, maxDate]
     )
@@ -124,7 +125,6 @@ api.get('/api/cases/date/:date/:countryRegion', (req, res) => {
 api.get('/api/cases/date/:date/:countryRegion/:provinceState', (req, res) => {
   const { countryRegion, date, provinceState } = req.params;
   const { previousDays } = req.query;
-  console.log(previousDays);
   const maxDate = date;
   let minDate = date;
 
@@ -135,10 +135,12 @@ api.get('/api/cases/date/:date/:countryRegion/:provinceState', (req, res) => {
   connect().then(() => {
     db.all(
       `
-        SELECT *, date AS entry_date
+        SELECT *
         FROM ${dailyReportsUS}
-        WHERE country_region = ? AND province_state = ? AND entry_date > ? AND entry_date <= ?
-        ORDER BY entry_date, province_state
+        WHERE country_region = ?
+          AND province_state = ?
+          AND date BETWEEN ? AND ?
+        ORDER BY date, province_state
       `,
       [countryRegion, provinceState, minDate, maxDate]
     )
