@@ -16,7 +16,7 @@
     "web:build": "cross-env NODE_ENV=production webpack --progress --hide-modules",
     "web:dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
     "web:prod": "",
-    "web:server": "babel-node server.js",
+    "web:server": "nodemon --exec babel-node server.js",
     "predeploy": "npm run web:build",
     "deploy": ""
   },
@@ -25,7 +25,9 @@
   "dependencies": {
     "csv-parser": "^2.3.2",
     "express": "^4.17.1",
+    "moment": "^2.25.3",
     "normalize.css": "^8.0.1",
+    "sqlite": "^4.0.7",
     "sqlite3": "^4.2.0",
     "vue": "^2.6.11",
     "vue-server-renderer": "^2.6.11"
@@ -51,6 +53,7 @@
     "eslint-plugin-react-hooks": "^4.0.2",
     "file-loader": "^6.0.0",
     "node-sass": "^4.14.1",
+    "nodemon": "^2.0.4",
     "prettier": "^2.0.5",
     "sass-loader": "^8.0.2",
     "vue-loader": "^15.9.2",

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import csv from 'csv-parser';
-import sqlite from 'sqlite3';
+import AppDAO from '../../shared';
 
 const dataTypes = {
   id: 'INTEGER',
@@ -14,6 +14,7 @@ const dataTypes = {
   Confirmed: 'INTEGER',
   Deaths: 'INTEGER',
   Recovered: 'INTEGER',
+  // New_Cases: 'INTEGER',
   Active: 'INTEGER',
   FIPS: 'INTEGER',
   Incident_Rate: 'REAL',
@@ -25,32 +26,6 @@ const dataTypes = {
   Testing_Rate: 'REAL',
   Hospitalization_Rate: 'REAL',
 };
-
-class AppDAO {
-  constructor(dbFilePath) {
-    this.db = new sqlite.Database(dbFilePath, (err) => {
-      if (err) {
-        throw new Error('Could not connect to database', err);
-      } else {
-        console.log('Connected to database');
-      }
-    });
-  }
-
-  run(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.run(sql, params, (err) => {
-        if (err) {
-          console.log('Error running sql ' + sql);
-          console.log(err);
-          reject(err);
-        } else {
-          resolve({ id: this.lastID });
-        }
-      });
-    });
-  }
-}
 
 const args = process.argv.slice(2);
 const dbPath = args.find((arg) => arg.startsWith('db=')).replace(/db=/, '');
@@ -89,6 +64,8 @@ fs.readdir(dataAbsPath, (err, files) => {
   // listing all files using forEach
   headerPromise
     .then((headers) => {
+      let previousResults = null;
+
       appDao.run(`CREATE TABLE IF NOT EXISTS daily_reports_us (
         ${Object.keys(dataTypes)
           .map((k) => {
@@ -100,7 +77,7 @@ fs.readdir(dataAbsPath, (err, files) => {
       )`);
 
       // TODO: this should run after the CREATE TABLE promise resolves.
-      files.forEach((file) => {
+      files.forEach((file, i) => {
         const results = [];
         const [month, day, year] = file.replace(/\.csv/, '').split('-');
         const date = `${year}-${month}-${day}`;
@@ -111,6 +88,11 @@ fs.readdir(dataAbsPath, (err, files) => {
           .on('end', () => {
             const values = results
               .map((current) => {
+                // Calculate new cases, new recoveries, new hospitalizations, new deaths since yesteray
+                const newCases = 0;
+                const newRecoveries = 0;
+                const newHospitalizations = 0;
+                const newDeaths = 0;
                 // Start by prepending an array for the columns we've added, a null
                 // value for the auto increment id field, and a date for the date field.
                 // Then we build up an array of data from the csv file, adding null values
@@ -139,6 +121,7 @@ fs.readdir(dataAbsPath, (err, files) => {
             `;
 
             appDao.run(insertStatement);
+            previousResults = results;
           });
       });
     })
@@ -146,5 +129,3 @@ fs.readdir(dataAbsPath, (err, files) => {
       console.log('Some shit went wrong', e);
     });
 });
-
-export default AppDAO;
