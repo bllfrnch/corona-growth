@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import csv from 'csv-parser';
-import AppDAO from '../../shared';
+import sqlite from 'sqlite3';
 
 const dataTypes = {
   id: 'INTEGER',
@@ -26,6 +26,34 @@ const dataTypes = {
   Testing_Rate: 'REAL',
   Hospitalization_Rate: 'REAL',
 };
+
+// TODO: use sqlite client library instead like we do in the API, but this will work
+// for now.
+class AppDAO {
+  constructor(dbFilePath) {
+    this.db = new sqlite.Database(dbFilePath, (err) => {
+      if (err) {
+        throw new Error('Could not connect to database', err);
+      } else {
+        console.log('Connected to database');
+      }
+    });
+  }
+
+  run(sql, params = []) {
+    return new Promise((resolve, reject) => {
+      this.db.run(sql, params, (err) => {
+        if (err) {
+          console.log('Error running sql ' + sql);
+          console.log(err);
+          reject(err);
+        } else {
+          resolve({ id: this.lastID });
+        }
+      });
+    });
+  }
+}
 
 const args = process.argv.slice(2);
 const dbPath = args.find((arg) => arg.startsWith('db=')).replace(/db=/, '');
@@ -61,69 +89,71 @@ fs.readdir(dataAbsPath, (err, files) => {
     }
   });
 
-  // listing all files using forEach
+  // get the headers
   headerPromise
     .then((headers) => {
-      let previousResults = null;
-
-      appDao.run(`CREATE TABLE IF NOT EXISTS daily_reports_us (
-        ${Object.keys(dataTypes)
-          .map((k) => {
-            return k === 'id'
-              ? `${k.toLowerCase()} ${dataTypes[k]} PRIMARY KEY AUTOINCREMENT`
-              : `${k.toLowerCase()} ${dataTypes[k]}`;
-          })
-          .join(',\n')}
-      )`);
-
-      // TODO: this should run after the CREATE TABLE promise resolves.
-      files.forEach((file, i) => {
-        const results = [];
-        const [month, day, year] = file.replace(/\.csv/, '').split('-');
-        const date = `${year}-${month}-${day}`;
-        const quote = (str) => `'${str}'`;
-        fs.createReadStream(`${dataAbsPath}/${file}`)
-          .pipe(csv())
-          .on('data', (data) => results.push(data))
-          .on('end', () => {
-            const values = results
-              .map((current) => {
-                // Calculate new cases, new recoveries, new hospitalizations, new deaths since yesteray
-                const newCases = 0;
-                const newRecoveries = 0;
-                const newHospitalizations = 0;
-                const newDeaths = 0;
-                // Start by prepending an array for the columns we've added, a null
-                // value for the auto increment id field, and a date for the date field.
-                // Then we build up an array of data from the csv file, adding null values
-                // when empty strings are found, and use the dataTypes lookup table to
-                // decide whether to quote or not.
-                return `(
-                  ${['null', quote(date)]
-                    .concat(
-                      headers.map((h) => {
-                        if (current[h] === '') {
-                          return 'null';
-                        }
-                        return dataTypes[h] === 'TEXT' ? quote(current[h]) : current[h];
-                      })
-                    )
-                    .join(', ')}
-                )`;
+      appDao
+        // create the table
+        .run(
+          `CREATE TABLE IF NOT EXISTS daily_reports_us (
+            ${Object.keys(dataTypes)
+              .map((k) => {
+                return k === 'id'
+                  ? `${k.toLowerCase()} ${dataTypes[k]} PRIMARY KEY AUTOINCREMENT`
+                  : `${k.toLowerCase()} ${dataTypes[k]}`;
               })
-              .join(',\n');
+              .join(',\n')}
+          )`
+        )
+        // insert the data
+        .then(() => {
+          files.forEach((file) => {
+            const results = [];
+            const [month, day, year] = file.replace(/\.csv/, '').split('-');
+            const date = `${year}-${month}-${day}`;
+            const quote = (str) => `'${str}'`;
+            fs.createReadStream(`${dataAbsPath}/${file}`)
+              .pipe(csv())
+              .on('data', (data) => results.push(data))
+              .on('end', () => {
+                const values = results
+                  .map((current) => {
+                    // Calculate new cases, new recoveries, new hospitalizations, new deaths since yesteray
+                    const newCases = 0;
+                    const newRecoveries = 0;
+                    const newHospitalizations = 0;
+                    const newDeaths = 0;
+                    // Start by prepending an array for the columns we've added, a null
+                    // value for the auto increment id field, and a date for the date field.
+                    // Then we build up an array of data from the csv file, adding null values
+                    // when empty strings are found, and use the dataTypes lookup table to
+                    // decide whether to quote or not.
+                    return `(
+                      ${['null', quote(date)]
+                        .concat(
+                          headers.map((h) => {
+                            if (current[h] === '') {
+                              return 'null';
+                            }
+                            return dataTypes[h] === 'TEXT' ? quote(current[h]) : current[h];
+                          })
+                        )
+                        .join(', ')}
+                    )`;
+                  })
+                  .join(',\n');
 
-            const insertStatement = `
-              INSERT INTO daily_reports_us
-              VALUES 
-                ${values}
-              ;
-            `;
+                const insertStatement = `
+                  INSERT INTO daily_reports_us
+                  VALUES 
+                    ${values}
+                  ;
+                `;
 
-            appDao.run(insertStatement);
-            previousResults = results;
+                appDao.run(insertStatement);
+              });
           });
-      });
+        });
     })
     .catch((e) => {
       console.log('Some shit went wrong', e);

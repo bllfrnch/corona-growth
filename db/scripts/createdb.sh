@@ -12,8 +12,10 @@ if [[ -d "$CORONA_DB_GIT_REPO_DIR" && -f "$CORONA_DB_GIT_REPO_DIR/.git" ]]; then
   # Yes? Call updatedb.sh and exit
   if [ -f "$CORONA_DB" ]; then
     echo "Existing database found at $CORONA_DB"
-    echo "Falling back to update."
-    exec $BASEDIR/updatedb.sh
+    git submodule foreach git pull origin master
+    echo "Rebuilding Database"
+    rm $CORONA_DB
+    node $JS_BIN/createdb.js db=$CORONA_DB dataDir=$CORONA_DAILY_REPORTS_US_DIR
   # No? Create database from data in repo
   else
     echo "Creating database from existing repository data."
@@ -24,6 +26,7 @@ if [[ -d "$CORONA_DB_GIT_REPO_DIR" && -f "$CORONA_DB_GIT_REPO_DIR/.git" ]]; then
 else
   echo "Creating $CORONA_GIT_REPO_PATH git submodule at $CORONA_DB_DIR..."
   git submodule add $CORONA_GIT_REPO_PATH $CORONA_DB_GIT_REPO_DIR
+  git submodule update --init
   echo "Creating database $CORONA_DB"
   node $JS_BIN/createdb.js db=$CORONA_DB dataDir=$CORONA_DAILY_REPORTS_US_DIR
   # sqlite3 $CORONA_DB
