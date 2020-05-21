@@ -1,16 +1,16 @@
 <template>
   <div id="#app">
     App:
-    <todo></todo>
+    <Map></Map>
   </div>
 </template>
 
 <script>
-import todo from './components/todo';
+import Map from './components/Map';
 export default {
   name: 'app',
   components: {
-    todo,
+    Map,
   },
 };
 </script>

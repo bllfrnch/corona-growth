@@ -3,6 +3,7 @@ import webpack from 'webpack';
 import VueLoaderPlugin from 'vue-loader/lib/plugin';
 
 const webpackConfig = {
+  mode: 'development',
   entry: {
     entry: ['webpack-hot-middleware/client?name=main', './src/main.js'],
     styles: ['webpack-hot-middleware/client?name=main', './src/styles/index.js'],
@@ -27,7 +28,7 @@ const webpackConfig = {
     },
     extensions: ['*', '.js', '.vue', '.json'],
   },
-  devtool: '#eval-source-map',
+  devtool: 'eval-source-map',
   module: {
     rules: [
       {
@@ -71,7 +72,7 @@ const webpackConfig = {
 };
 
 if (process.env.NODE_ENV === 'production') {
-  webpackConfig.devtool = '#source-map';
+  webpackConfig.devtool = 'source-map';
   webpackConfig.plugins = (webpackConfig.plugins || []).concat([
     new webpack.DefinePlugin({
       'process.env': {
