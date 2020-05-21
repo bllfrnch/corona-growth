@@ -88,13 +88,9 @@ api.get('/api/cases/country/:countryRegion/:provinceState', (req, res) => {
 // is specified, then get data for the previous days too.
 api.get('/api/cases/date/:date/:countryRegion', (req, res) => {
   const { countryRegion, date } = req.params;
-  const { previousDays } = req.query;
+  const previousDays = req.query.previousDays || 0;
   const maxDate = date;
-  let minDate = date;
-  if (previousDays) {
-    const d = moment().subtract(previousDays, 'days');
-    minDate = d.format('YYYY-MM-DD');
-  }
+  const minDate = moment(maxDate).subtract(previousDays, 'days').format('YYYY-MM-DD');
 
   connect().then(() => {
     db.all(
@@ -124,13 +120,9 @@ api.get('/api/cases/date/:date/:countryRegion', (req, res) => {
 
 api.get('/api/cases/date/:date/:countryRegion/:provinceState', (req, res) => {
   const { countryRegion, date, provinceState } = req.params;
-  const { previousDays } = req.query;
+  const previousDays = req.query.previousDays || 0;
   const maxDate = date;
-  let minDate = date;
-
-  if (previousDays) {
-    minDate = moment(maxDate).subtract(previousDays, 'days').format('YYYY-MM-DD');
-  }
+  const minDate = moment(maxDate).subtract(previousDays, 'days').format('YYYY-MM-DD');
 
   connect().then(() => {
     db.all(

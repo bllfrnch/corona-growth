@@ -9,7 +9,7 @@
     "predb:create": "npm run db:scripts:build",
     "db:create": "sh ./db/scripts/createdb.sh",
     "predb:update": "npm run db:scripts:build",
-    "db:update": "",
+    "db:update": "sh ./db/scripts/updatedb.sh",
     "db:delete": "rm ./db/corona.db",
     "db:start": "",
     "db:stop": "",
