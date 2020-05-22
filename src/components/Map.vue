@@ -1,6 +1,5 @@
 <template>
   <div class="map-container">
-    Here's the map:
     <MglMap :accessToken="accessToken" :mapStyle="mapStyle" @load="onMapLoaded" />
   </div>
 </template>
@@ -19,16 +18,8 @@ export default {
     onMapLoaded(ev) {
       const { map } = ev;
       this.map = map;
+      this.map.resize();
     },
-    // addNewTodo(todo) {
-    //   this.todos.push(todo);
-    // },
-    // checkTodo(todo) {
-    //   this.todos = this.todos.map((item) => (item.id === todo.id ? todo : item));
-    // },
-    // removeTodo(todoId) {
-    //   this.todos = this.todos.filter((item) => item.id !== todoId);
-    // },
   },
   components: {
     MglMap,
@@ -37,7 +28,12 @@ export default {
 </script>
 <style lang="scss" scoped>
 .map-container {
-  width: 100%;
-  height: 80vh;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  // width: 100%;
+  // height: 100%;
 }
 </style>

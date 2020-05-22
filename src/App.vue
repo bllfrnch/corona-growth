@@ -1,7 +1,11 @@
 <template>
-  <div id="#app">
-    App:
-    <Map></Map>
+  <div class="app-wrapper">
+    <section class="preamble">
+      <h1>Visualizing the Roni</h1>
+    </section>
+    <section class="map-wrapper">
+      <Map />
+    </section>
   </div>
 </template>
 
@@ -15,4 +19,21 @@ export default {
 };
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.preamble {
+  h1 {
+    margin: 0;
+  }
+}
+
+.map-wrapper {
+  flex: 1;
+  position: relative;
+}
+</style>
