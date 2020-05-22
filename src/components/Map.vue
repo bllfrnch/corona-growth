@@ -1,6 +1,12 @@
 <template>
   <div class="map-container">
-    <MglMap :accessToken="accessToken" :mapStyle="mapStyle" @load="onMapLoaded" />
+    <MglMap
+      :accessToken="accessToken"
+      :center="center"
+      :mapStyle="mapStyle"
+      :zoom="zoom"
+      @load="onMapLoaded"
+    />
   </div>
 </template>
 <script>
@@ -10,15 +16,17 @@ import { ACCESS_TOKEN, MAP_STYLE } from '../shared/constants';
 export default {
   data() {
     return {
-      accessToken: ACCESS_TOKEN, // your access token. Needed if you using Mapbox maps
-      mapStyle: MAP_STYLE, // your map style
+      accessToken: ACCESS_TOKEN,
+      map: undefined,
+      center: [-98, 39],
+      mapStyle: MAP_STYLE,
+      zoom: 4,
     };
   },
   methods: {
     onMapLoaded(ev) {
       const { map } = ev;
       this.map = map;
-      this.map.resize();
     },
   },
   components: {
@@ -33,7 +41,5 @@ export default {
   right: 0;
   bottom: 0;
   left: 0;
-  // width: 100%;
-  // height: 100%;
 }
 </style>
