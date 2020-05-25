@@ -15,15 +15,28 @@ import Mapbox from 'mapbox-gl';
 import { MglMap } from 'vue-mapbox';
 import { ACCESS_TOKEN, MAP_STYLE } from '../shared/constants';
 export default {
+  components: {
+    MglMap,
+  },
+  props: {
+    boundary: String,
+  },
   data() {
     return {
       accessToken: ACCESS_TOKEN,
       cases: null,
       center: [-98, 38.88],
+      map: null,
       mapStyle: MAP_STYLE,
       zoom: 4,
     };
   },
+  computed: {
+    activeLayer() {
+      return this.boundary === 'county' ? 'data-vis-county' : 'data-vis-state';
+    },
+  },
+
   methods: {
     onMapLoaded(ev) {
       const { map } = ev;
@@ -39,33 +52,33 @@ export default {
       });
 
       // STATES
-      // map.addLayer(
-      //   {
-      //     id: 'states-join',
-      //     type: 'fill',
-      //     source: 'states',
-      //     'source-layer': 'states',
-      //     paint: {
-      //       'fill-color': 'rgba(50, 50, 50, 0.5)',
-      //     },
-      //   },
-      //   'waterway-label'
-      // );
-
-      // COUNTIES
       map.addLayer(
         {
-          id: 'counties',
+          id: 'states-join',
           type: 'fill',
-          source: 'counties',
-          'source-layer': 'original',
+          source: 'states',
+          'source-layer': 'states',
           paint: {
-            'fill-outline-color': 'rgba(0,0,0,0.1)',
-            'fill-color': 'rgba(0,0,0,0.1)',
+            'fill-color': 'rgba(50, 50, 50, 0.5)',
           },
         },
         'waterway-label'
-      ); // Place polygon under these labels.
+      );
+
+      // COUNTIES
+      // map.addLayer(
+      //   {
+      //     id: 'counties',
+      //     type: 'fill',
+      //     source: 'counties',
+      //     'source-layer': 'original',
+      //     paint: {
+      //       'fill-outline-color': 'rgba(0,0,0,0.1)',
+      //       'fill-color': 'rgba(0,0,0,0.1)',
+      //     },
+      //   },
+      //   'waterway-label'
+      // ); // Place polygon under these labels.
     },
   },
   mounted() {
@@ -80,8 +93,8 @@ export default {
       this.cases = response.data;
     });
   },
-  components: {
-    MglMap,
+  updated() {
+    // this.boundary === 'county' ? this.addCountyLayer() : this.addStateLayer();
   },
 };
 </script>
