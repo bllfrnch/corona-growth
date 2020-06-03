@@ -22,6 +22,7 @@ app.use(webpackHotMiddleware(compiler));
 
 // Include server routes as a middleware
 app.use(function (req, res, next) {
+  console.log('api call');
   api(req, res, next);
 });
 

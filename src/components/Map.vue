@@ -51,19 +51,23 @@ export default {
         url: 'mapbox://mapbox.82pkq93d',
       });
 
+      this.map = map;
+
+      this.addStateLayer();
+
       // STATES
-      map.addLayer(
-        {
-          id: 'states-join',
-          type: 'fill',
-          source: 'states',
-          'source-layer': 'states',
-          paint: {
-            'fill-color': 'rgba(50, 50, 50, 0.5)',
-          },
-        },
-        'waterway-label'
-      );
+      // map.addLayer(
+      //   {
+      //     id: 'states-vis',
+      //     type: 'fill',
+      //     source: 'states',
+      //     'source-layer': 'states',
+      //     paint: {
+      //       'fill-color': 'rgba(50, 50, 50, 0.5)',
+      //     },
+      //   },
+      //   'waterway-label'
+      // );
 
       // COUNTIES
       // map.addLayer(
@@ -80,6 +84,21 @@ export default {
       //   'waterway-label'
       // ); // Place polygon under these labels.
     },
+
+    addStateLayer() {
+      this.map.addLayer(
+              {
+                id: 'states-vis',
+                type: 'fill',
+                source: 'states',
+                'source-layer': 'states',
+                paint: {
+                  'fill-color': 'rgba(50, 50, 50, 0.5)',
+                },
+              },
+              'waterway-label'
+      );
+    }
   },
   mounted() {
     const d = new Date();
