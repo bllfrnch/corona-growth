@@ -1,6 +1,55 @@
 // TODO: Need to turn this into an environment variable
 export const dbPath = '/Users/208317/repos/corona-growth/db/corona.db';
 export const dailyReportsUS = 'daily_reports_us';
+export const tables = {
+  reports: {
+    name: 'Reports',
+    columns: {
+      id: {
+        primaryKey: true,
+        autoIncrement: true,
+        type: 'INTEGER'
+      },
+      fips: 'TEXT',
+      date: 'TEXT',
+      cases: 'INTEGER',
+      deaths: 'INTEGER',
+      recoveries: 'INTEGER',
+    },
+  },
+  localities: {
+    name: 'Localities',
+    columns: {
+      fips: {
+        primaryKey: true,
+        type: 'TEXT'
+      },
+      name: 'TEXT',
+      lat: 'REAL',
+      lon: 'REAL',
+      population: 'INTEGER',
+    },
+  },
+  states: {
+    name: 'States',
+    columns: {
+      fips: {
+        primaryKey: true,
+        type: 'TEXT'
+      },
+      name: 'TEXT',
+      lat: 'REAL',
+      lon: 'REAL',
+      population: 'INTEGER',
+    },
+  }
+};
+
+export const columnMap = {
+  Long_: 'lon',
+};
+
+
 export const columns = [
   'id',
   'province_state',
@@ -23,6 +72,3 @@ export const columns = [
   'hospitalization_rate',
   'date',
 ];
-export const columnMap = {
-  long_: 'lon',
-};
