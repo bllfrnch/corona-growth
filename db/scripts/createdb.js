@@ -37,8 +37,12 @@ const args = process.argv.slice(2);
 // TODO: this is ugly, fix it
 const dbPath = args.find((arg) => arg.startsWith('db=')).replace(/db=/, '');
 const caseDataPath = args.find((arg) => arg.startsWith('dataDir=')).replace(/dataDir=/, '');
-const locationDataPath = args.find((arg) => arg.startsWith('locationData=')).replace(/locationData=/, '');
-const populationDataPath = args.find((arg) => arg.startsWith('populationData=')).replace(/populationData=/, '');
+const locationDataPath = args
+  .find((arg) => arg.startsWith('locationData='))
+  .replace(/locationData=/, '');
+const populationDataPath = args
+  .find((arg) => arg.startsWith('populationData='))
+  .replace(/populationData=/, '');
 // TODO: this is ugly, fix it
 const dbAbsPath = path.resolve(dbPath);
 const caseDataAbsPath = path.resolve(caseDataPath);
@@ -61,8 +65,11 @@ console.log(`INFO: Creating database at ${dbAbsPath}`);
 connect()
   // Create the database tables
   .then(async () => {
-    const [createLocalitiesTableSql, createReportsTableSql, createStatesTableSql] =
-      [tables.localities, tables.reports, tables.states].map(def => buildCreateTableSql(def));
+    const [createLocalitiesTableSql, createReportsTableSql, createStatesTableSql] = [
+      tables.localities,
+      tables.reports,
+      tables.states,
+    ].map((def) => buildCreateTableSql(def));
     // TODO: clean this up
     return db.getDatabaseInstance().serialize(() => {
       db.run(createLocalitiesTableSql);
@@ -74,14 +81,24 @@ connect()
   // Populate the States table
   .then(async () => {
     console.log(`INFO: Reading location data from ${locationDataAbsPath}`);
-    const locationStream = await fs.createReadStream(locationDataAbsPath, {encoding: 'utf8'});
+    const locationStream = await fs.createReadStream(locationDataAbsPath, { encoding: 'utf8' });
     return new Promise((resolve, reject) => {
       const results = [];
       locationStream
         .pipe(
           csv([
-            'id', 'iso2', 'iso3', 'code3', 'fips', 'admin2', 'province_state', 'country_region', 'lat', 'lon',
-            'combined_key', 'population'
+            'id',
+            'iso2',
+            'iso3',
+            'code3',
+            'fips',
+            'admin2',
+            'province_state',
+            'country_region',
+            'lat',
+            'lon',
+            'combined_key',
+            'population',
           ])
         )
         .on('data', (data) => results.push(data))
@@ -94,32 +111,95 @@ connect()
         });
     });
   })
+  // TODO: augment state data with data from here: https://covidtracking.com/data/api
   .then(() => {
-    const usaData = locationData.filter(row => row.iso3 === 'USA');
-    const usaStates = usaData.filter(row => row.lat && row.lon && row.fips.length === 2);
-    const insertStatesDataSql = buildInsertSql(
-      tables.states,
-      usaStates,
-      { fips: 'fips', lat: 'lat', lon: 'lon', population: 'population', name: 'province_state' }
-    );
+    const usaData = locationData.filter((row) => row.iso3 === 'USA');
+    const usaStates = usaData.filter((row) => row.lat && row.lon && row.fips.length === 2);
+    const insertStatesDataSql = buildInsertSql(tables.states, usaStates, {
+      fips: 'fips',
+      lat: 'lat',
+      lon: 'lon',
+      population: 'population',
+      name: 'province_state',
+    });
     return db.run(insertStatesDataSql);
   })
   .then(() => console.log(`INFO: Inserted data into table States`))
   .then(() => {
-    const usaData = locationData.filter(row => row.iso3 === 'USA');
-    const usaLocalities = usaData.filter(row => row.lat && row.lon && row.fips.length === 5);
-    const insertLocalitiesDataSql = buildInsertSql(
-      tables.localities,
-      usaLocalities,
-      { fips: 'fips', lat: 'lat', lon: 'lon', population: 'population', name: 'admin2' }
-    );
+    const usaData = locationData.filter((row) => row.iso3 === 'USA');
+    const usaLocalities = usaData.filter((row) => row.lat && row.lon && row.fips.length === 5);
+    const insertLocalitiesDataSql = buildInsertSql(tables.localities, usaLocalities, {
+      fips: 'fips',
+      lat: 'lat',
+      lon: 'lon',
+      population: 'population',
+      name: 'admin2',
+    });
     return db.run(insertLocalitiesDataSql);
   })
   .then(() => console.log(`INFO: Inserted data into table Localities`))
   .then(async () => {
     const files = await readdirAsync(caseDataAbsPath);
-    // console.log(files);
     return files;
+  })
+  .then(async (files) => {
+    const headerMap = {
+      FIPS: 'fips',
+      Admin2: 'admin2',
+      Province_State: 'province_state',
+      Country_Region: 'country_region',
+      Last_Update: 'last_update',
+      Lat: 'lat',
+      Long_: 'lon',
+      Confirmed: 'confirmed',
+      Deaths: 'deaths',
+      Recovered: 'recovered',
+      Active: 'active',
+      Combined_Key: 'combined_key',
+      Incidence_Rate: 'incidence_rate',
+      'Case-Fatality_Ratio': 'case_fatality_ratio',
+    };
+
+    return files.forEach((file) => {
+      const results = [];
+      const [month, day, year] = file.replace(/\.csv/, '').split('-');
+      const date = `${year}-${month}-${day}`;
+
+      return fs
+        .createReadStream(`${caseDataAbsPath}/${file}`)
+        .pipe(
+          csv([
+            'fips',
+            'admin2',
+            'province_state',
+            'country_region',
+            'last_update',
+            'lat',
+            'lon',
+            'confirmed',
+            'deaths',
+            'recovered',
+            'active',
+            'combined_key',
+            'incidence_rate',
+            'case_fatality_ratio',
+          ])
+        )
+        .on('data', (data) => results.push(data))
+        .on('end', () => {
+          results.forEach((result) => (result.date = date));
+          const insertReportsDataSql = buildInsertSql(tables.reports, results, {
+            id: 'id',
+            fips: 'fips',
+            date: 'date',
+            lon: 'lon',
+            cases: 'confirmed',
+            deaths: 'deaths',
+            recoveries: 'recovered',
+          });
+          console.log(insertReportsDataSql.slice(0, 300));
+        });
+    });
   })
   // .then((data) => {
   //   console.log(data)
@@ -148,7 +228,17 @@ fs.readdir(caseDataAbsPath, (err, files) => {
       fs.createReadStream(`${caseDataAbsPath}/${first}`)
         .pipe(
           csv([
-          'id', 'iso2', 'iso3', 'code3', 'fips', 'admin2', 'province_state', 'country_region', 'lat', 'lon', 'population'
+            'id',
+            'iso2',
+            'iso3',
+            'code3',
+            'fips',
+            'admin2',
+            'province_state',
+            'country_region',
+            'lat',
+            'lon',
+            'population',
           ])
         )
         .on('headers', (h) => {
@@ -168,13 +258,13 @@ fs.readdir(caseDataAbsPath, (err, files) => {
         .run(
           `CREATE TABLE IF NOT EXISTS daily_reports_us (
             ${Object.keys(dataTypes)
-            .map((k) => {
-              return k === 'id'
-                ? `${k.toLowerCase()} ${dataTypes[k]} PRIMARY KEY AUTOINCREMENT`
-                : `${k.toLowerCase()} ${dataTypes[k]}`;
-            })
-            .join(',\n')}
-          )`,
+              .map((k) => {
+                return k === 'id'
+                  ? `${k.toLowerCase()} ${dataTypes[k]} PRIMARY KEY AUTOINCREMENT`
+                  : `${k.toLowerCase()} ${dataTypes[k]}`;
+              })
+              .join(',\n')}
+          )`
         )
         // insert the data
         .then(() => {
@@ -201,15 +291,15 @@ fs.readdir(caseDataAbsPath, (err, files) => {
                     // decide whether to quote or not.
                     return `(
                       ${['null', quote(date)]
-                      .concat(
-                        headers.map((h) => {
-                          if (current[h] === '') {
-                            return 'null';
-                          }
-                          return dataTypes[h] === 'TEXT' ? quote(current[h]) : current[h];
-                        }),
-                      )
-                      .join(', ')}
+                        .concat(
+                          headers.map((h) => {
+                            if (current[h] === '') {
+                              return 'null';
+                            }
+                            return dataTypes[h] === 'TEXT' ? quote(current[h]) : current[h];
+                          })
+                        )
+                        .join(', ')}
                     )`;
                   })
                   .join(',\n');
